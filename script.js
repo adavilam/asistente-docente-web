@@ -1,114 +1,61 @@
-// Importa las funciones que necesitas
+// Tus imports y configuración de Firebase no cambian...
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import { getFirestore, collection, query, where, getDocs, doc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-// Tu configuración de Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyAnUbit4fLzYDKLdt9KIV2RpT2hhxRk21I",
-    authDomain: "asistente-docente-web.firebaseapp.com",
-    projectId: "asistente-docente-web",
-    storageBucket: "asistente-docente-web.firebasestorage.app",
-    messagingSenderId: "472540351675",
-    appId: "1:472540351675:web:acd7a1a8be5c6b28572d9e"
+    // ... tu configuración ...
 };
 
-// Inicialización de Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Referencias a elementos del HTML
+// Tus referencias a elementos del DOM no cambian...
 const authSeccion = document.getElementById('auth-seccion');
 const appPrincipal = document.getElementById('app-principal');
-const userEmailSpan = document.getElementById('user-email');
-const seleccionCentroDiv = document.getElementById('seleccion-centro');
-const listaCentrosDiv = document.getElementById('lista-centros');
-const dashboardCentroDiv = document.getElementById('dashboard-centro');
+// ... etc ...
 
-// --- LÓGICA DE LA APLICACIÓN ---
+// --- NUEVA FUNCIÓN ---
+// Carga las unidades filtrando por usuario Y por centro
+const cargarUnidadesPorCentro = async (userId, centroId) => {
+    const unidadesList = document.getElementById('unidades-list');
+    unidadesList.innerHTML = 'Cargando unidades...';
 
-// Función para mostrar los centros del usuario
-const mostrarSelectorDeCentros = async (userId) => {
-    listaCentrosDiv.innerHTML = 'Cargando tus centros...';
+    // Consulta con doble filtro
+    const q = query(collection(db, "unidades"), 
+                      where("creadorId", "==", userId), 
+                      where("centroId", "==", centroId));
     
-    const membresiasQuery = query(collection(db, "membresias"), where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
     
-    try {
-        const membresiasSnapshot = await getDocs(membresiasQuery);
+    unidadesList.innerHTML = ''; // Limpia la lista
 
-        if (membresiasSnapshot.empty) {
-            listaCentrosDiv.innerHTML = 'No estás asignado a ningún centro educativo.';
-            return;
-        }
-
-        listaCentrosDiv.innerHTML = ''; 
-
-        // BUCLE CORREGIDO (SOLO HAY UNO)
-        membresiasSnapshot.forEach(async (membresia) => {
-            const centroId = membresia.data().centroId;
-            const centroDocRef = doc(db, "centros", centroId);
-            const centroDoc = await getDoc(centroDocRef);
-
-            if (centroDoc.exists()) {
-                const centroData = centroDoc.data();
-                const botonCentro = document.createElement('button');
-                botonCentro.innerText = centroData.nombreCentro;
-                botonCentro.onclick = () => {
-                    seleccionarCentro(centroData, centroId);
-                };
-                listaCentrosDiv.appendChild(botonCentro);
-            } else {
-                console.error("Error: El documento para el centro con ID", centroId, "no fue encontrado.");
-            }
+    if (querySnapshot.empty) {
+        unidadesList.innerHTML = '<li>No tienes unidades guardadas para este centro.</li>';
+    } else {
+        querySnapshot.forEach((doc) => {
+            const unidad = doc.data();
+            const listItem = document.createElement('li');
+            listItem.textContent = `${unidad.nombreUnidad} - Grado: ${unidad.grado}`;
+            unidadesList.appendChild(listItem);
         });
-
-    } catch (error) {
-        console.error("Error en la consulta de Firestore:", error);
     }
 };
 
-// Función que se ejecuta al seleccionar un centro
+// --- FUNCIÓN MODIFICADA ---
+// Ahora llama a la función que carga las unidades
 const seleccionarCentro = (centroData, centroId) => {
-    seleccionCentroDiv.style.display = 'none';
-    dashboardCentroDiv.style.display = 'block';
+    document.getElementById('seleccion-centro').style.display = 'none';
+    document.getElementById('dashboard-centro').style.display = 'block';
     document.getElementById('nombre-centro-seleccionado').innerText = `Trabajando en: ${centroData.nombreCentro}`;
+    
+    // Llama a la nueva función para cargar las unidades
+    if (auth.currentUser) {
+        cargarUnidadesPorCentro(auth.currentUser.uid, centroId);
+    }
 };
 
-// --- MANEJO DE AUTENTICACIÓN ---
-onAuthStateChanged(auth, user => {
-    if (user) { 
-        authSeccion.style.display = 'none';
-        appPrincipal.style.display = 'block';
-        userEmailSpan.innerText = user.email;
-        mostrarSelectorDeCentros(user.uid);
-    } else { 
-        authSeccion.style.display = 'block';
-        appPrincipal.style.display = 'none';
-        seleccionCentroDiv.style.display = 'block';
-        dashboardCentroDiv.style.display = 'none';
-    }
-});
-
-// --- CÓDIGO DE LOS BOTONES QUE FALTABA ---
-
-// Lógica de Registro
-document.getElementById('btn-registro').addEventListener('click', () => {
-    const email = document.getElementById('registro-email').value;
-    const pass = document.getElementById('registro-pass').value;
-    createUserWithEmailAndPassword(auth, email, pass)
-        .catch(error => console.error("Error registro:", error.message));
-});
-
-// Lógica de Login
-document.getElementById('btn-login').addEventListener('click', () => {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-    signInWithEmailAndPassword(auth, email, pass)
-        .catch(error => console.error("Error login:", error.message));
-});
-
-// Lógica de Logout
-document.getElementById('btn-logout').addEventListener('click', () => {
-    signOut(auth);
-});
+// El resto de tu código (onAuthStateChanged, login, registro, etc.) sigue igual.
+// Asegúrate de tener el resto del código aquí.
+// ...
