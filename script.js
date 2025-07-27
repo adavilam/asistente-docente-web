@@ -61,10 +61,11 @@ const mostrarSelectorDeCentros = async (userId) => {
                 const botonCentro = document.createElement('button');
                 botonCentro.innerText = centroData.nombreCentro;
                 botonCentro.onclick = () => {
-                    seleccionarCentro(centroData, centroId);
-                };
-                listaCentrosDiv.appendChild(botonCentro);
-            } else {
+                    const seleccionarCentro = (centroData, centroId) => {
+    seleccionCentroDiv.style.display = 'none';
+    dashboardCentroDiv.style.display = 'block';
+    document.getElementById('nombre-centro-seleccionado').innerText = `Trabajando en: ${centroData.nombreCentro}`;
+};
                 console.error("Paso G: ERROR - El documento para el centro con ID", centroId, "no fue encontrado en la colección 'centros'.");
             }
         });
