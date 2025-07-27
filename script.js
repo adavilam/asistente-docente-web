@@ -1,30 +1,36 @@
-// Tus imports y configuración de Firebase no cambian...
+// Importa las funciones necesarias de Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import { getFirestore, collection, query, where, getDocs, doc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
+// Tu configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAnUbit4fLzYDKLdt9KIV2RpT2hhxRk21I",
-  authDomain: "asistente-docente-web.firebaseapp.com",
-  projectId: "asistente-docente-web",
-  storageBucket: "asistente-docente-web.firebasestorage.app",
-  messagingSenderId: "472540351675",
-  appId: "1:472540351675:web:acd7a1a8be5c6b28572d9e"
+    apiKey: "AIzaSyAnUbit4fLzYDKLdt9KIV2RpT2hhxRk21I",
+    authDomain: "asistente-docente-web.firebaseapp.com",
+    projectId: "asistente-docente-web",
+    storageBucket: "asistente-docente-web.firebasestorage.app",
+    messagingSenderId: "472540351675",
+    appId: "1:472540351675:web:acd7a1a8be5c6b28572d9e"
 };
 
+// Inicialización de Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Tus referencias a elementos del DOM no cambian...
+// Referencias a elementos del HTML
 const authSeccion = document.getElementById('auth-seccion');
 const appPrincipal = document.getElementById('app-principal');
-// ... etc ...
+const userEmailSpan = document.getElementById('user-email');
+const seleccionCentroDiv = document.getElementById('seleccion-centro');
+const listaCentrosDiv = document.getElementById('lista-centros');
+const dashboardCentroDiv = document.getElementById('dashboard-centro');
+const unidadesList = document.getElementById('unidades-list');
 
-// --- NUEVA FUNCIÓN ---
+// --- LÓGICA DE LA APLICACIÓN ---
+
 // Carga las unidades filtrando por usuario Y por centro
 const cargarUnidadesPorCentro = async (userId, centroId) => {
-    const unidadesList = document.getElementById('unidades-list');
     unidadesList.innerHTML = 'Cargando unidades...';
 
     // Consulta con doble filtro
@@ -48,19 +54,18 @@ const cargarUnidadesPorCentro = async (userId, centroId) => {
     }
 };
 
-// --- FUNCIÓN MODIFICADA ---
-// Ahora llama a la función que carga las unidades
-const seleccionarCentro = (centroData, centroId) => {
-    document.getElementById('seleccion-centro').style.display = 'none';
-    document.getElementById('dashboard-centro').style.display = 'block';
-    document.getElementById('nombre-centro-seleccionado').innerText = `Trabajando en: ${centroData.nombreCentro}`;
+// Función para mostrar los centros del usuario
+const mostrarSelectorDeCentros = async (userId) => {
+    listaCentrosDiv.innerHTML = 'Cargando tus centros...';
     
-    // Llama a la nueva función para cargar las unidades
-    if (auth.currentUser) {
-        cargarUnidadesPorCentro(auth.currentUser.uid, centroId);
-    }
-};
+    const membresiasQuery = query(collection(db, "membresias"), where("userId", "==", userId));
+    const membresiasSnapshot = await getDocs(membresiasQuery);
 
-// El resto de tu código (onAuthStateChanged, login, registro, etc.) sigue igual.
-// Asegúrate de tener el resto del código aquí.
-// ...
+    if (membresiasSnapshot.empty) {
+        listaCentrosDiv.innerHTML = 'No estás asignado a ningún centro educativo.';
+        return;
+    }
+
+    listaCentrosDiv.innerHTML = ''; 
+
+    membresiasSnapshot.
