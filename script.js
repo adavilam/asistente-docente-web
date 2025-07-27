@@ -80,8 +80,48 @@ document.getElementById('btn-logout').addEventListener('click', () => {
     signOut(auth);
 });
 
-// (El resto del código no es relevante para el problema de los botones de login/registro)
-const mostrarSelectorDeCentros = async (userId) => { /* ... */ };
-const seleccionarCentro = (centroData, centroId) => { /* ... */ };
+const mostrarSelectorDeCentros = async (userId) => {
+    console.log("Paso A: Iniciando mostrarSelectorDeCentros para el usuario:", userId);
+    listaCentrosDiv.innerHTML = 'Cargando tus centros...';
+    
+    const membresiasQuery = query(collection(db, "membresias"), where("userId", "==", userId));
+    
+    try {
+        const membresiasSnapshot = await getDocs(membresiasQuery);
+        console.log("Paso B: La consulta de membresías se completó.");
 
+        if (membresiasSnapshot.empty) {
+            console.log("Paso C: No se encontraron membresías para este usuario.");
+            listaCentrosDiv.innerHTML = 'No estás asignado a ningún centro educativo.';
+            return;
+        }
+
+        console.log(`Paso D: Se encontraron ${membresiasSnapshot.size} membresías.`);
+        listaCentrosDiv.innerHTML = ''; 
+
+        membresiasSnapshot.forEach(async (membresia) => {
+            const centroId = membresia.data().centroId;
+            console.log("Paso E: Procesando membresía para el centro con ID:", centroId);
+            
+            const centroDocRef = doc(db, "centros", centroId);
+            const centroDoc = await getDoc(centroDocRef);
+
+            if (centroDoc.exists()) {
+                console.log("Paso F: El documento del centro existe. Creando botón.");
+                const centroData = centroDoc.data();
+                const botonCentro = document.createElement('button');
+                botonCentro.innerText = centroData.nombreCentro;
+                botonCentro.onclick = () => {
+                    seleccionarCentro(centroData, centroId);
+                };
+                listaCentrosDiv.appendChild(botonCentro);
+            } else {
+                console.error("Paso G: ERROR - El documento para el centro con ID", centroId, "no fue encontrado en la colección 'centros'.");
+            }
+        });
+
+    } catch (error) {
+        console.error("Paso H: ERROR en la consulta de Firestore:", error);
+    }
+};
 console.log("Punto 10: Script completamente cargado.");
