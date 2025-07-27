@@ -28,55 +28,87 @@ const dashboardCentroDiv = document.getElementById('dashboard-centro');
 
 // --- LÓGICA DE LA APLICACIÓN ---
 
-// Función para mostrar los centros del usuario (con mensajes de depuración)
+// Función para mostrar los centros del usuario
 const mostrarSelectorDeCentros = async (userId) => {
-    console.log("Paso A: Iniciando mostrarSelectorDeCentros para el usuario:", userId);
     listaCentrosDiv.innerHTML = 'Cargando tus centros...';
     
     const membresiasQuery = query(collection(db, "membresias"), where("userId", "==", userId));
     
     try {
         const membresiasSnapshot = await getDocs(membresiasQuery);
-        console.log("Paso B: La consulta de membresías se completó.");
 
         if (membresiasSnapshot.empty) {
-            console.log("Paso C: No se encontraron membresías para este usuario.");
             listaCentrosDiv.innerHTML = 'No estás asignado a ningún centro educativo.';
             return;
         }
 
-        console.log(`Paso D: Se encontraron ${membresiasSnapshot.size} membresías.`);
         listaCentrosDiv.innerHTML = ''; 
 
+        // BUCLE CORREGIDO (SOLO HAY UNO)
         membresiasSnapshot.forEach(async (membresia) => {
             const centroId = membresia.data().centroId;
-            console.log("Paso E: Procesando membresía para el centro con ID:", centroId);
-            
-            const centroDocRef = doc(db, "centros", centroId);
-            const centroDoc = await getDoc(centroDocRef);
-
-            membresiasSnapshot.forEach(async (membresia) => {
-            const centroId = membresia.data().centroId;
-            console.log("Paso E: Procesando membresía para el centro con ID:", centroId);
-            
             const centroDocRef = doc(db, "centros", centroId);
             const centroDoc = await getDoc(centroDocRef);
 
             if (centroDoc.exists()) {
-                console.log("Paso F: El documento del centro existe. Creando botón.");
                 const centroData = centroDoc.data();
                 const botonCentro = document.createElement('button');
                 botonCentro.innerText = centroData.nombreCentro;
-                
-                // --- CORRECCIÓN AQUÍ ---
-                // Simplemente llamamos a la función que ya existe.
                 botonCentro.onclick = () => {
                     seleccionarCentro(centroData, centroId);
                 };
                 listaCentrosDiv.appendChild(botonCentro);
             } else {
-                // --- CORRECCIÓN AQUÍ ---
-                // El error debe ir en un bloque 'else'.
-                console.error("Paso G: ERROR - El documento para el centro con ID", centroId, "no fue encontrado en la colección 'centros'.");
+                console.error("Error: El documento para el centro con ID", centroId, "no fue encontrado.");
             }
         });
+
+    } catch (error) {
+        console.error("Error en la consulta de Firestore:", error);
+    }
+};
+
+// Función que se ejecuta al seleccionar un centro
+const seleccionarCentro = (centroData, centroId) => {
+    seleccionCentroDiv.style.display = 'none';
+    dashboardCentroDiv.style.display = 'block';
+    document.getElementById('nombre-centro-seleccionado').innerText = `Trabajando en: ${centroData.nombreCentro}`;
+};
+
+// --- MANEJO DE AUTENTICACIÓN ---
+onAuthStateChanged(auth, user => {
+    if (user) { 
+        authSeccion.style.display = 'none';
+        appPrincipal.style.display = 'block';
+        userEmailSpan.innerText = user.email;
+        mostrarSelectorDeCentros(user.uid);
+    } else { 
+        authSeccion.style.display = 'block';
+        appPrincipal.style.display = 'none';
+        seleccionCentroDiv.style.display = 'block';
+        dashboardCentroDiv.style.display = 'none';
+    }
+});
+
+// --- CÓDIGO DE LOS BOTONES QUE FALTABA ---
+
+// Lógica de Registro
+document.getElementById('btn-registro').addEventListener('click', () => {
+    const email = document.getElementById('registro-email').value;
+    const pass = document.getElementById('registro-pass').value;
+    createUserWithEmailAndPassword(auth, email, pass)
+        .catch(error => console.error("Error registro:", error.message));
+});
+
+// Lógica de Login
+document.getElementById('btn-login').addEventListener('click', () => {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    signInWithEmailAndPassword(auth, email, pass)
+        .catch(error => console.error("Error login:", error.message));
+});
+
+// Lógica de Logout
+document.getElementById('btn-logout').addEventListener('click', () => {
+    signOut(auth);
+});
