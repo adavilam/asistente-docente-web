@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Asistente Docente Pro</title>
+    <title>Asistente Docente Web</title>
     <style>
         body { font-family: sans-serif; }
         #app-principal { display: none; }
@@ -14,7 +14,7 @@
 <body>
 
     <div id="auth-seccion">
-        <h1>Asistente Docente Pro</h1>
+        <h1>Asistente Docente Web</h1>
         <h2>Iniciar Sesión</h2>
         <input type="email" id="login-email" placeholder="Correo electrónico">
         <input type="password" id="login-pass" placeholder="Contraseña">
@@ -27,30 +27,22 @@
     </div>
 
     <div id="app-principal">
-        <p>Bienvenido, <span id="user-email"></span>. <button id="btn-logout">Cerrar Sesión</button></p>
-        <hr>
-        <h2>Mis Programaciones Didácticas</h2>
-            <ul id="unidades-list">
-            </ul>
-        <button id="btn-nueva-programacion">Crear Nueva Programación de Unidad</button>
-        <form id="form-programacion" style="display: none;">
-    </form>
-    <h3>Datos Generales</h3>
-    <input type="text" id="prog-docente" placeholder="Nombre del Docente">
-    <input type="text" id="prog-unidad" placeholder="Nombre de la Unidad">
-    <input type="text" id="prog-tiempo" placeholder="Tiempo Asignado">
-    <input type="text" id="prog-grado" placeholder="Grado/Año">
+    <p>Bienvenido, <span id="user-email"></span>. <button id="btn-logout">Cerrar Sesión</button></p>
+    <hr>
 
-    <h3>Datos Curriculares</h3>
-    <textarea id="prog-competencia" placeholder="Pegue aquí la Competencia de Grado"></textarea>
-    <textarea id="prog-eje" placeholder="Pegue aquí el Eje Transversal"></textarea>
-    <textarea id="prog-indicadores" placeholder="Pegue aquí los Indicadores de Logro (uno por línea)"></textarea>
-    <textarea id="prog-contenidos" placeholder="Pegue aquí los Contenidos (conceptuales, procedimentales, actitudinales)"></textarea>
-    <textarea id="prog-criterios" placeholder="Pegue aquí los Criterios de Evaluación"></textarea>
-
-    <button type="submit">Guardar Programación</button>
-</form>
+    <div id="seleccion-centro">
+        <h2>Selecciona un Centro Educativo para Continuar</h2>
+        <div id="lista-centros"></div>
     </div>
+
+    <div id="dashboard-centro" style="display: none;">
+        <h2 id="nombre-centro-seleccionado"></h2>
+        <h3>Mis Programaciones Didácticas</h3>
+        <ul id="unidades-list"></ul>
+        <button id="btn-nueva-programacion">Crear Nueva Programación de Unidad</button>
+        <form id="form-programacion" style="display: none;"></form>
+    </div>
+</div>
 
     <script type="module" src="script.js"></script>
 
