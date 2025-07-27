@@ -55,20 +55,28 @@ const mostrarSelectorDeCentros = async (userId) => {
             const centroDocRef = doc(db, "centros", centroId);
             const centroDoc = await getDoc(centroDocRef);
 
+            membresiasSnapshot.forEach(async (membresia) => {
+            const centroId = membresia.data().centroId;
+            console.log("Paso E: Procesando membresía para el centro con ID:", centroId);
+            
+            const centroDocRef = doc(db, "centros", centroId);
+            const centroDoc = await getDoc(centroDocRef);
+
             if (centroDoc.exists()) {
                 console.log("Paso F: El documento del centro existe. Creando botón.");
                 const centroData = centroDoc.data();
                 const botonCentro = document.createElement('button');
                 botonCentro.innerText = centroData.nombreCentro;
+                
+                // --- CORRECCIÓN AQUÍ ---
+                // Simplemente llamamos a la función que ya existe.
                 botonCentro.onclick = () => {
-                    const seleccionarCentro = (centroData, centroId) => {
-    seleccionCentroDiv.style.display = 'none';
-    dashboardCentroDiv.style.display = 'block';
-    document.getElementById('nombre-centro-seleccionado').innerText = `Trabajando en: ${centroData.nombreCentro}`;
-};
+                    seleccionarCentro(centroData, centroId);
+                };
+                listaCentrosDiv.appendChild(botonCentro);
+            } else {
+                // --- CORRECCIÓN AQUÍ ---
+                // El error debe ir en un bloque 'else'.
                 console.error("Paso G: ERROR - El documento para el centro con ID", centroId, "no fue encontrado en la colección 'centros'.");
             }
         });
-
-    } catch (error) {
-        console.error("Paso H: ERROR en la consulta
