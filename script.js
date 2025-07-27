@@ -4,7 +4,12 @@ import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, s
 import { getFirestore, collection, query, where, getDocs, doc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    // ... tu configuración ...
+  apiKey: "AIzaSyAnUbit4fLzYDKLdt9KIV2RpT2hhxRk21I",
+  authDomain: "asistente-docente-web.firebaseapp.com",
+  projectId: "asistente-docente-web",
+  storageBucket: "asistente-docente-web.firebasestorage.app",
+  messagingSenderId: "472540351675",
+  appId: "1:472540351675:web:acd7a1a8be5c6b28572d9e"
 };
 
 const app = initializeApp(firebaseConfig);
